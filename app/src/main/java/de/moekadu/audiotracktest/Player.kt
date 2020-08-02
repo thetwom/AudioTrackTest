@@ -6,6 +6,7 @@ import android.media.AudioManager
 import android.media.AudioTrack
 import android.util.Log
 import kotlin.math.PI
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 class Player {
@@ -16,11 +17,23 @@ class Player {
     private var writtenFrames = 0
     private var buffer = FloatArray(0)
 
-    fun play() {
-        audioTrack?.stop()
+    fun play(bufferSizeMultiple : Int, bufferSizeMillis : Float = -1f) {
+        stop()
 
         val sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_MUSIC)
-        val bufferSizeInBytes = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_FLOAT)
+        var bufferSizeInBytes = 0
+
+        if (bufferSizeMillis > 0f) {
+            val bufferSizeInFrames = (bufferSizeMillis * sampleRate / 1000.0f).roundToInt()
+            bufferSizeInBytes = bufferSizeInFrames * 4
+        }
+        else{
+            val minBufferSizeInBytes = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_FLOAT)
+            bufferSizeInBytes = bufferSizeMultiple * minBufferSizeInBytes
+        }
+
+
+        Log.v("AudioTrackTest", "Player.play: buufferSizeInyBytes = $bufferSizeInBytes")
         val updatePeriodFraction = 2
         // Divide by 4 to get buffer size in float
         updatePeriod = bufferSizeInBytes / 4 / updatePeriodFraction
@@ -48,14 +61,17 @@ class Player {
             override fun onMarkerReached(track: AudioTrack?) { }
 
             override fun onPeriodicNotification(track: AudioTrack?) {
+                Log.v("AudioTrackTest", "Player.onPeriodicNotification: headPosition = ${track?.playbackHeadPosition}")
                 writeSineToAudioTrack()
             }
 
         })
         audioTrack = track
         track.flush()
-        track.play()
+
         track.positionNotificationPeriod = updatePeriod
+        track.play()
+
         // write several update periods to audioTrack to fill the complete buffer, afterwards
         // our periodic notification listener will fill the buffer.
         for(i in 0 until updatePeriodFraction)

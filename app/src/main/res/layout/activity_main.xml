@@ -6,27 +6,65 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/stop_button"
-        android:layout_width="0dp"
+<!--    <Button-->
+<!--        android:id="@+id/stop_button"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="8dp"-->
+<!--        android:layout_marginEnd="8dp"-->
+<!--        android:text="stop"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/play_button" />-->
+
+<!--    <Button-->
+<!--        android:id="@+id/play_button"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="8dp"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        android:layout_marginEnd="8dp"-->
+<!--        android:text="start"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <RadioGroup
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:text="stop"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/play_button" />
-
-    <Button
-        android:id="@+id/play_button"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:text="start"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintTop_toTopOf="parent">
+         <RadioButton
+            android:id="@+id/stop_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="stop playing"
+            />
+        <RadioButton
+            android:id="@+id/minimim_buffer_size"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="minimum buffer size"
+            />
+        <RadioButton
+            android:id="@+id/two_minimim_buffer_size"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2 x minimum buffer size"
+            />
+         <RadioButton
+            android:id="@+id/fivehundred_millis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="500 ms"
+            />
+        <RadioButton
+            android:id="@+id/thousand_millis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1000 ms"
+            />
+    </RadioGroup>
 </androidx.constraintlayout.widget.ConstraintLayout>

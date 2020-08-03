@@ -10,41 +10,41 @@ import kotlin.math.sin
 
 class Player {
 
+    private val sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_MUSIC)
+    private val bufferSizeInBytes = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_FLOAT)
 
-    private var audioTrack : AudioTrack? = null
+    val audioTrack = AudioTrack.Builder()
+        .setAudioAttributes(
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+        )
+        .setAudioFormat(
+            AudioFormat.Builder()
+                .setEncoding(AudioFormat.ENCODING_PCM_FLOAT)
+                .setSampleRate(sampleRate)
+                .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                .build()
+        )
+        .setBufferSizeInBytes(bufferSizeInBytes)
+        .build()
+
     private var updatePeriod = 0
     private var writtenFrames = 0
     private var buffer = FloatArray(0)
 
     fun play() {
-        audioTrack?.stop()
+        audioTrack.stop()
 
-        val sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_MUSIC)
-        val bufferSizeInBytes = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_FLOAT)
         val updatePeriodFraction = 2
         // Divide by 4 to get buffer size in float
         updatePeriod = bufferSizeInBytes / 4 / updatePeriodFraction
         buffer = FloatArray(updatePeriod)
         writtenFrames = 0
 
-        val track = AudioTrack.Builder()
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build()
-            )
-            .setAudioFormat(
-                AudioFormat.Builder()
-                    .setEncoding(AudioFormat.ENCODING_PCM_FLOAT)
-                    .setSampleRate(sampleRate)
-                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                    .build()
-            )
-            .setBufferSizeInBytes(bufferSizeInBytes)
-            .build()
 
-        track.setPlaybackPositionUpdateListener(object : AudioTrack.OnPlaybackPositionUpdateListener {
+        audioTrack.setPlaybackPositionUpdateListener(object : AudioTrack.OnPlaybackPositionUpdateListener {
             override fun onMarkerReached(track: AudioTrack?) { }
 
             override fun onPeriodicNotification(track: AudioTrack?) {
@@ -52,10 +52,9 @@ class Player {
             }
 
         })
-        audioTrack = track
-        track.flush()
-        track.play()
-        track.positionNotificationPeriod = updatePeriod
+        audioTrack.flush()
+        audioTrack.play()
+        audioTrack.positionNotificationPeriod = updatePeriod
         // write several update periods to audioTrack to fill the complete buffer, afterwards
         // our periodic notification listener will fill the buffer.
         for(i in 0 until updatePeriodFraction)
@@ -63,14 +62,12 @@ class Player {
     }
 
     fun stop() {
-        audioTrack?.stop()
-        audioTrack = null
+        audioTrack.stop()
     }
 
     private fun writeSineToAudioTrack() {
-        val track = audioTrack ?: return
         val frequency = 220f
-        val sampleRate = track.sampleRate
+        val sampleRate = audioTrack.sampleRate
 //        Log.v("AudioTrackTest", "writtenFrames = $writtenFrames, update period = $updatePeriod")
 
         for (i in buffer.indices) {
@@ -78,7 +75,7 @@ class Player {
             buffer[i] = sin(2f * PI.toFloat() * frequency * time)
         }
 
-        track.write(buffer, 0, buffer.size, AudioTrack.WRITE_NON_BLOCKING)
+        audioTrack.write(buffer, 0, buffer.size, AudioTrack.WRITE_NON_BLOCKING)
         writtenFrames += buffer.size
     }
 }

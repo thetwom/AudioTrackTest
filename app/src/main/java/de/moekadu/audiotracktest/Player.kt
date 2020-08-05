@@ -1,22 +1,26 @@
 package de.moekadu.audiotracktest
 
-import android.media.AudioAttributes
-import android.media.AudioFormat
-import android.media.AudioManager
-import android.media.AudioTrack
+import android.content.Context
+import android.media.*
+import android.os.Handler
 import android.util.Log
 import kotlin.math.PI
 import kotlin.math.sin
 
 class Player {
 
-
     private var audioTrack : AudioTrack? = null
     private var updatePeriod = 0
     private var writtenFrames = 0
     private var buffer = FloatArray(0)
 
-    fun play() {
+    interface RoutingInfoListener {
+        fun onRoutingChanged(info : String)
+    }
+
+    var routingInfoListener : RoutingInfoListener? = null
+
+    fun play() : String {
         audioTrack?.stop()
 
         val sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_MUSIC)
@@ -44,6 +48,17 @@ class Player {
             .setBufferSizeInBytes(bufferSizeInBytes)
             .build()
 
+        track.addOnRoutingChangedListener(
+            object: AudioRouting.OnRoutingChangedListener {
+                override fun onRoutingChanged(router: AudioRouting?) {
+                    val device = router?.routedDevice
+                    val info = "product name = ${device?.productName}, type = ${device?.type}"
+                    routingInfoListener?.onRoutingChanged(info)
+                }
+            },
+            null
+        )
+
         track.setPlaybackPositionUpdateListener(object : AudioTrack.OnPlaybackPositionUpdateListener {
             override fun onMarkerReached(track: AudioTrack?) { }
 
@@ -60,6 +75,7 @@ class Player {
         // our periodic notification listener will fill the buffer.
         for(i in 0 until updatePeriodFraction)
             writeSineToAudioTrack()
+        return "sample rate = $sampleRate, buffer size in bytes = $bufferSizeInBytes"
     }
 
     fun stop() {
